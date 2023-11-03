@@ -1,0 +1,19 @@
+query get_resource(
+    $application: String!
+    $kind: String!
+    $name: String!
+    $resourceName: String!
+    $version: String!
+    $group: String
+) {
+    resource(
+        application: $application
+        kind: $kind
+        name: $name
+        resourceName: $resourceName
+        version: $version
+        group: $group
+    ) {
+        liveState
+    }
+}
