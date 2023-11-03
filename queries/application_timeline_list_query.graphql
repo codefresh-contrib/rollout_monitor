@@ -1,0 +1,369 @@
+query ApplicationTimelineListQuery(
+    $filters: GitopsReleaseFilterArgs
+    $pagination: SlicePaginationArgs
+    $sort: GitopsReleaseSortArg
+) {
+    gitopsReleases(pagination: $pagination, filters: $filters, sort: $sort) {
+        edges {
+            node {
+                current
+                historyId
+                argoHistoryId
+                childApps {
+                    name
+                    repo
+                    cluster
+                    status
+                    __typename
+                }
+                applicationMetadata {
+                    name
+                    runtime
+                    namespace
+                    uid
+                    __typename
+                }
+                application {
+                    issues {
+                        key
+                        type
+                        value
+                        __typename
+                    }
+                    prs {
+                        type
+                        value
+                        key
+                        __typename
+                    }
+                    committers {
+                        userName
+                        avatar
+                        commits {
+                            url
+                            message
+                            sha
+                            __typename
+                        }
+                        __typename
+                    }
+                    builds {
+                        id
+                        pipeline {
+                            id
+                            project
+                            projectId
+                            name
+                            __typename
+                        }
+                        __typename
+                    }
+                    status {
+                        syncStatus
+                        healthStatus
+                        healthMessage
+                        syncStartedAt
+                        syncFinishedAt
+                        commitAuthor
+                        commitAvatar
+                        commitUrl
+                        commitMessage
+                        commitDate
+                        revision
+                        __typename
+                    }
+                    __typename
+                }
+                fromState {
+                    rollouts {
+                        name
+                        __typename
+                    }
+                    __typename
+                }
+                toState {
+                    rollouts {
+                        name
+                        __typename
+                    }
+                    __typename
+                }
+                transition {
+                    rollouts {
+                        from {
+                            name
+                            uid
+                            currentRevision
+                            steps
+                            currentStepIndex
+                            currentStepSpec
+                            currentStrategyName
+                            phase
+                            services
+                            isComplete
+                            revisionInfo {
+                                replicas
+                                updatedReplicas
+                                availableReplicas
+                                unavailableReplicas
+                                weight
+                                image
+                                imageDetails {
+                                    image
+                                    repositoryName
+                                    binaryId
+                                    workflowName
+                                    workflowUrl
+                                    ciProvider
+                                    __typename
+                                }
+                                __typename
+                            }
+                            __typename
+                        }
+                        to {
+                            name
+                            uid
+                            currentRevision
+                            disabled
+                            steps
+                            currentStepIndex
+                            currentStepSpec
+                            currentStrategyName
+                            phase
+                            message
+                            services
+                            isComplete
+                            paused
+                            pausedInconclusive
+                            prePromotionAnalysisRunStatus {
+                                name
+                                phase
+                                successful
+                                failed
+                                inconclusive
+                                error
+                                __typename
+                            }
+                            postPromotionAnalysisRunStatus {
+                                name
+                                phase
+                                successful
+                                failed
+                                inconclusive
+                                error
+                                __typename
+                            }
+                            stepsAnalysisRunStatuses {
+                                name
+                                phase
+                                successful
+                                failed
+                                inconclusive
+                                error
+                                __typename
+                            }
+                            backgroundAnalysisRunStatus {
+                                name
+                                phase
+                                successful
+                                failed
+                                inconclusive
+                                error
+                                __typename
+                            }
+                            revisionInfo {
+                                replicas
+                                updatedReplicas
+                                availableReplicas
+                                unavailableReplicas
+                                weight
+                                image
+                                imageDetails {
+                                    image
+                                    repositoryName
+                                    binaryId
+                                    workflowName
+                                    workflowUrl
+                                    ciProvider
+                                    __typename
+                                }
+                                __typename
+                            }
+                            __typename
+                        }
+                        rollbacks {
+                            from {
+                                name
+                                uid
+                                currentRevision
+                                steps
+                                currentStepIndex
+                                currentStepSpec
+                                currentStrategyName
+                                phase
+                                services
+                                isComplete
+                                revisionInfo {
+                                    replicas
+                                    updatedReplicas
+                                    availableReplicas
+                                    unavailableReplicas
+                                    weight
+                                    image
+                                    imageDetails {
+                                        image
+                                        repositoryName
+                                        binaryId
+                                        workflowName
+                                        workflowUrl
+                                        ciProvider
+                                        __typename
+                                    }
+                                    __typename
+                                }
+                                __typename
+                            }
+                            to {
+                                name
+                                uid
+                                currentRevision
+                                steps
+                                currentStepIndex
+                                currentStepSpec
+                                currentStrategyName
+                                phase
+                                message
+                                services
+                                isComplete
+                                paused
+                                prePromotionAnalysisRunStatus {
+                                    name
+                                    phase
+                                    successful
+                                    failed
+                                    inconclusive
+                                    error
+                                    __typename
+                                }
+                                postPromotionAnalysisRunStatus {
+                                    name
+                                    phase
+                                    successful
+                                    failed
+                                    inconclusive
+                                    error
+                                    __typename
+                                }
+                                stepsAnalysisRunStatuses {
+                                    name
+                                    phase
+                                    successful
+                                    failed
+                                    inconclusive
+                                    error
+                                    __typename
+                                }
+                                backgroundAnalysisRunStatus {
+                                    name
+                                    phase
+                                    successful
+                                    failed
+                                    inconclusive
+                                    error
+                                    __typename
+                                }
+                                revisionInfo {
+                                    replicas
+                                    updatedReplicas
+                                    availableReplicas
+                                    unavailableReplicas
+                                    weight
+                                    image
+                                    imageDetails {
+                                        image
+                                        repositoryName
+                                        binaryId
+                                        workflowName
+                                        workflowUrl
+                                        ciProvider
+                                        __typename
+                                    }
+                                    __typename
+                                }
+                                __typename
+                            }
+                            __typename
+                        }
+                        __typename
+                    }
+                    services {
+                        name
+                        from {
+                            images {
+                                name
+                                image
+                                repositoryName
+                                binaryId
+                                workflowName
+                                workflowUrl
+                                ciProvider
+                                __typename
+                            }
+                            replicas
+                            availableReplicas
+                            __typename
+                        }
+                        to {
+                            images {
+                                name
+                                image
+                                repositoryName
+                                binaryId
+                                workflowName
+                                workflowUrl
+                                ciProvider
+                                __typename
+                            }
+                            replicas
+                            availableReplicas
+                            __typename
+                        }
+                        __typename
+                    }
+                    __typename
+                }
+                operationState {
+                    syncResult {
+                        resources {
+                            group
+                            version
+                            kind
+                            name
+                            namespace
+                            message
+                            syncActionOnResource
+                            status
+                            syncPhase
+                            hookPhase
+                            hookType
+                            __typename
+                        }
+                        __typename
+                    }
+                    __typename
+                }
+                __typename
+            }
+            __typename
+        }
+        pageInfo {
+            hasNextPage
+            hasPrevPage
+            startCursor
+            endCursor
+            __typename
+        }
+        __typename
+    }
+}
