@@ -179,7 +179,7 @@ def monitor_rollout():
 
     while rollout_status in ['progressing', 'paused']:
         print(f'{ rollout_status}, ', end="")
-        rollout_step_state = get_rollout_state()
+        rollout_state = get_rollout_state()
         rollout_status = rollout_state['phase'].lower()
         time.sleep(5)
 
