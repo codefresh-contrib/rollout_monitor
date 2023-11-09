@@ -155,6 +155,7 @@ def look_for_rollout_by_rollout_name(rollouts, rollout_name):
 
 
 def get_rollout_state():
+    rollout_state = {}
     application_timeline = query_application_timeline_list_query()
     releases = application_timeline['gitopsReleases']['edges']
     release = look_for_release_by_commit(releases, COMMIT_SHA)
@@ -162,6 +163,9 @@ def get_rollout_state():
         print(
             f"Release related to commit '{COMMIT_SHA}' couldn't be found. It's probably too old.")
 
+    # Safely checking if the Release found already has the Rollous we're looking for.
+    rollouts = release.get('transition', {}).get('rollouts', [])
+    rollout_state = look_for_rollout_by_rollout_name(rollouts, ROLLOUT)
 
     return rollout_state
 
