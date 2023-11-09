@@ -33,6 +33,7 @@ def main():
         "COMMIT_SHA": COMMIT_SHA,
         "ROLLOUT": ROLLOUT
     }
+    print("################################################################################")
     print("Monitoring the following Rollout: ")
     print(json.dumps(parameters, indent=4), "\n")
 
@@ -53,6 +54,7 @@ def main():
 
     print()
     monitor_rollout()
+    print("################################################################################")
 
 
 ################################################################################
@@ -156,18 +158,10 @@ def get_rollout_state():
     application_timeline = query_application_timeline_list_query()
     releases = application_timeline['gitopsReleases']['edges']
     release = look_for_release_by_commit(releases, COMMIT_SHA)
-    if release is {}:
-        raise Exception(
-            f"Release related to commit '{COMMIT_SHA}' couldn't be found. It's too old.")
-    rollouts = release['transition']['rollouts']
-    rollout = look_for_rollout_by_rollout_name(rollouts, ROLLOUT)
+    if not release:
+        print(
+            f"Release related to commit '{COMMIT_SHA}' couldn't be found. It's probably too old.")
 
-    rollout_state = rollout
-
-    # print(json.dumps(rollout_state))
-    # print("Sending App Timeline to a file")
-    with open("response.json", "w") as outfile:
-        json.dump(application_timeline, outfile)
 
     return rollout_state
 
