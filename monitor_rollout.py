@@ -172,7 +172,7 @@ def get_rollout_state():
 
 def monitor_rollout():
     rollout_state = get_rollout_state()
-    # Healthy, Progressing, Paused, Degraded
+    # Healthy, Progressing, Paused, Degraded, Terminated
     rollout_status = rollout_state['phase'].lower()
 
     while rollout_status in ['progressing', 'paused']:
@@ -186,7 +186,7 @@ def monitor_rollout():
     print(f'Rollout Status --> { rollout_status }')
     export_variable(CF_STEP_NAME, rollout_status)
 
-    if rollout_status in ['degraded']:
+    if rollout_status in ['degraded', 'terminated']:
         raise Exception(f'Rollout  status: {rollout_status}')
 
 
