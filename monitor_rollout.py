@@ -12,11 +12,14 @@ APPLICATION_NAMESPACE = os.getenv('APPLICATION_NAMESPACE', '')
 COMMIT_SHA = os.getenv('COMMIT_SHA')
 ROLLOUT = os.getenv('ROLLOUT')
 RELEASES_TO_RETRIEVE = int(os.getenv('RELEASES_TO_RETRIEVE', '20'))
+# In minutes. How much time to check for the existence of the app|commit|rollout.
+SEARCH_TIMEOUT = int(os.getenv('SEARCH_TIMEOUT', '20'))
 
 # Defaults | constants
 CF_URL = os.getenv('CF_URL', 'https://g.codefresh.io')
 CF_API_KEY = os.getenv('CF_API_KEY')
 CF_STEP_NAME = os.getenv('CF_STEP_NAME', 'STEP_NAME')
+CHECK_INTERVAL = 5 # interval in seconds between each check in the monitor loop
 
 # Inferred during execution time
 CF_ACCOUNT_ID = ""  # It will be infered later, using the CF_API_KEY
@@ -179,9 +182,9 @@ def monitor_rollout():
         print(f'{ rollout_status}, ', end="")
         rollout_state = get_rollout_state()
         rollout_status = rollout_state['phase'].lower()
-        time.sleep(5)
+        time.sleep(CHECK_INTERVAL)
 
-    print("Rollout State:")
+    print("\nRollout State:")
     print(json.dumps(rollout_state, indent=4), "\n")
     print(f'Rollout Status --> { rollout_status }')
     export_variable(CF_STEP_NAME, rollout_status)
@@ -207,18 +210,18 @@ def rollout_exists():
     result = False
     rollout_state = get_rollout_state()
     rollout_status = rollout_state.get('phase')
-    
-    max_retries = 192
+
+    max_retries = (SEARCH_TIMEOUT * 60) / CHECK_INTERVAL
     retry_counter = 0
     while rollout_status == None and retry_counter < max_retries:
         retry_counter += 1
         print(
             f"App, Release or Rollout not found, please check your parameters. x{retry_counter} | ", end="")
-        time.sleep(5)
+        time.sleep(CHECK_INTERVAL)
         rollout_state = get_rollout_state()
         rollout_status = rollout_state.get('phase')
     if retry_counter > 0:
-        print()
+        print("\n\n")
 
     if rollout_status != None:
         result = True
