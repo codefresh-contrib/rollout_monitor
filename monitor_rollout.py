@@ -11,6 +11,7 @@ APPLICATION = os.getenv('APPLICATION')
 APPLICATION_NAMESPACE = os.getenv('APPLICATION_NAMESPACE', '')
 COMMIT_SHA = os.getenv('COMMIT_SHA')
 ROLLOUT = os.getenv('ROLLOUT')
+MULTI_CLUSTER_ROLLOUT_ID = os.getenv('MULTI_CLUSTER_ROLLOUT_ID')
 RELEASES_TO_RETRIEVE = int(os.getenv('RELEASES_TO_RETRIEVE', '20'))
 # In minutes. How much time to check for the existence of the app|commit|rollout.
 SEARCH_TIMEOUT = int(os.getenv('SEARCH_TIMEOUT', '20'))
@@ -19,11 +20,12 @@ SEARCH_TIMEOUT = int(os.getenv('SEARCH_TIMEOUT', '20'))
 CF_URL = os.getenv('CF_URL', 'https://g.codefresh.io')
 CF_API_KEY = os.getenv('CF_API_KEY')
 CF_STEP_NAME = os.getenv('CF_STEP_NAME', 'STEP_NAME')
-CHECK_INTERVAL = 5 # interval in seconds between each check in the monitor loop
+CHECK_INTERVAL = 5  # interval in seconds between each check in the monitor loop
 
 # Inferred during execution time
 CF_ACCOUNT_ID = ""  # It will be infered later, using the CF_API_KEY
 RUNTIME_NAMESPACE = ""  # It will be infered later, during execution
+RUNTIME_INGRESS_HOST = ""
 
 
 ################################################################################
@@ -33,8 +35,8 @@ def main():
     parameters = {
         "RUNTIME": RUNTIME,
         "APPLICATION": APPLICATION,
-        "COMMIT_SHA": COMMIT_SHA,
-        "ROLLOUT": ROLLOUT
+        "ROLLOUT": ROLLOUT,
+        "MULTI_CLUSTER_ROLLOUT_ID": MULTI_CLUSTER_ROLLOUT_ID
     }
     print("################################################################################")
     print("Monitoring the following Rollout: ")
@@ -136,8 +138,11 @@ def query_rollout_resource(runtime_ingress_host):
 def fetch_runtime_details():
     runtime = get_runtime()
     runtime_ns = runtime['runtime']['metadata']['namespace']
+    runtime_ingress_host = runtime['runtime']['ingressHost']
     global RUNTIME_NAMESPACE
     RUNTIME_NAMESPACE = str(runtime_ns)
+    global RUNTIME_INGRESS_HOST
+    RUNTIME_INGRESS_HOST = str(runtime_ingress_host)
 
 
 def look_for_release_by_commit(releases, commit_sha):
@@ -149,6 +154,30 @@ def look_for_release_by_commit(releases, commit_sha):
     return release_found
 
 
+def extract_multi_cluster_rollout_id_from_release(release):
+    multi_cluster_rollout_id = ''
+    commitMessage = release['node']['application']['status']['commitMessage']
+    lines = commitMessage.split('\n')
+    # print(f'lines = {lines}')
+    multi_cluster_rollout_id_key_pair = [
+        s for s in lines if "multiClusterRolloutId" in s][-1]
+    # print(f'multi_cluster_rollout_id_key_pair => {multi_cluster_rollout_id_key_pair}')
+    multi_cluster_rollout_id = multi_cluster_rollout_id_key_pair.split(':')[
+        1].strip()
+    print(f'multi_cluster_rollout_id => {multi_cluster_rollout_id}')
+    return multi_cluster_rollout_id
+
+
+def look_for_release_by_multi_cluster_rollout_id(releases, multi_cluster_rollout_id):
+    release_found = {}
+    for release in releases:
+        release_multi_cluster_rollout_id = extract_multi_cluster_rollout_id_from_release(
+            release)
+        if release_multi_cluster_rollout_id == multi_cluster_rollout_id:
+            release_found = release['node']
+    return release_found
+
+
 def look_for_rollout_by_rollout_name(rollouts, rollout_name):
     rollout_found = {}
     for rollout in rollouts:
@@ -156,19 +185,33 @@ def look_for_rollout_by_rollout_name(rollouts, rollout_name):
             rollout_found = rollout['to']
     return rollout_found
 
+# FROM RUNTIME
+
 
 def get_rollout_state():
     rollout_state = {}
-    application_timeline = query_application_timeline_list_query()
-    releases = application_timeline['gitopsReleases']['edges']
-    release = look_for_release_by_commit(releases, COMMIT_SHA)
-    if not release:
-        print(
-            f"Release related to commit '{COMMIT_SHA}' couldn't be found. It's probably too old.")
+    rollout_resource = query_rollout_resource(RUNTIME_INGRESS_HOST)
 
-    # Safely checking if the Release found already has the Rollous we're looking for.
-    rollouts = release.get('transition', {}).get('rollouts', [])
-    rollout_state = look_for_rollout_by_rollout_name(rollouts, ROLLOUT)
+    # print('rollout_resource =>')
+    # print(json.dumps(rollout_resource, indent=4))
+    if rollout_resource['resource']['liveState'] != '':
+        rollout_state = json.loads( rollout_resource.get('resource', {}).get('liveState', {}) )
+    multi_cluster_rollout_id = rollout_state.get('metadata', {}).get('labels', {}).get('multiClusterRolloutId', '')
+
+    if multi_cluster_rollout_id == MULTI_CLUSTER_ROLLOUT_ID:
+        rollout_state = {
+            "name": rollout_state['metadata']['name'],
+            "namespace": rollout_state['metadata']['namespace'],
+            "resourceVersion": rollout_state['metadata']['resourceVersion'],
+            "uid": rollout_state['metadata']['uid'],
+            "labels": rollout_state['metadata']['labels'],
+            "phase": rollout_state['status']['phase'],
+            "readyReplicas": rollout_state['status']['readyReplicas'],
+            "replicas": rollout_state['status']['replicas']
+        }
+    else:
+        print(
+            f"Rollout with multiClusterRolloutId = '{MULTI_CLUSTER_ROLLOUT_ID}' couldn't be found (yet)")
 
     return rollout_state
 
@@ -216,7 +259,7 @@ def rollout_exists():
     while rollout_status == None and retry_counter < max_retries:
         retry_counter += 1
         print(
-            f"App, Release or Rollout not found, please check your parameters. x{retry_counter} | ", end="")
+            f"Rollout not found, please check your parameters. x{retry_counter} | ", end="")
         time.sleep(CHECK_INTERVAL)
         rollout_state = get_rollout_state()
         rollout_status = rollout_state.get('phase')
