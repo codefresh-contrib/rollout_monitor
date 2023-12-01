@@ -195,19 +195,21 @@ def get_rollout_state():
     # print('rollout_resource =>')
     # print(json.dumps(rollout_resource, indent=4))
     if rollout_resource['resource']['liveState'] != '':
-        rollout_state = json.loads( rollout_resource.get('resource', {}).get('liveState', {}) )
-    multi_cluster_rollout_id = rollout_state.get('metadata', {}).get('labels', {}).get('multiClusterRolloutId', '')
+        rollout_state = json.loads(rollout_resource.get(
+            'resource', {}).get('liveState', {}))
+    multi_cluster_rollout_id = rollout_state.get('metadata', {}).get(
+        'labels', {}).get('multiClusterRolloutId', '')
 
     if multi_cluster_rollout_id == MULTI_CLUSTER_ROLLOUT_ID:
         rollout_state = {
-            "name": rollout_state['metadata']['name'],
-            "namespace": rollout_state['metadata']['namespace'],
-            "resourceVersion": rollout_state['metadata']['resourceVersion'],
-            "uid": rollout_state['metadata']['uid'],
-            "labels": rollout_state['metadata']['labels'],
-            "phase": rollout_state['status']['phase'],
-            "readyReplicas": rollout_state['status']['readyReplicas'],
-            "replicas": rollout_state['status']['replicas']
+            "name": rollout_state['metadata'].get('name', ''),
+            "namespace": rollout_state['metadata'].get('unamespaceid', ''),
+            "resourceVersion": rollout_state['metadata'].get('resourceVersion', ''),
+            "uid": rollout_state['metadata'].get('uid', ''),
+            "labels": rollout_state['metadata'].get('labels', ''),
+            "phase": rollout_state['status'].get('phase', ''),
+            "readyReplicas": rollout_state['status'].get('readyReplicas', ''),
+            "replicas": rollout_state['status'].get('replicas', '')
         }
     else:
         print(
