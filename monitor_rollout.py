@@ -21,6 +21,7 @@ CF_URL = os.getenv('CF_URL', 'https://g.codefresh.io')
 CF_API_KEY = os.getenv('CF_API_KEY')
 CF_STEP_NAME = os.getenv('CF_STEP_NAME', 'STEP_NAME')
 CHECK_INTERVAL = 5  # interval in seconds between each check in the monitor loop
+GRAPHQL_RETRIES = 13 # Number of retries allowed for each graphql call
 
 # Inferred during execution time
 CF_ACCOUNT_ID = ""  # It will be infered later, using the CF_API_KEY
@@ -76,7 +77,7 @@ def get_runtime():
         url=CF_URL + '/2.0/api/graphql',
         headers={'authorization': CF_API_KEY},
         verify=True,
-        retries=3,
+        retries=GRAPHQL_RETRIES,
     )
     client = Client(transport=transport, fetch_schema_from_transport=False)
     query = get_query('getRuntime')  # gets gql query
@@ -92,7 +93,7 @@ def query_application_timeline_list_query():
         url=CF_URL + '/2.0/api/graphql',
         headers={'authorization': CF_API_KEY},
         verify=True,
-        retries=3,
+        retries=GRAPHQL_RETRIES,
     )
 
     client = Client(transport=transport, fetch_schema_from_transport=False)
@@ -116,7 +117,7 @@ def query_rollout_resource(runtime_ingress_host):
         url=runtime_ingress_host + '/app-proxy/api/graphql',
         headers={'authorization': CF_API_KEY},
         verify=True,
-        retries=3,
+        retries=GRAPHQL_RETRIES,
     )
 
     client = Client(transport=transport, fetch_schema_from_transport=False)
