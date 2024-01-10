@@ -21,7 +21,7 @@ CF_URL = os.getenv('CF_URL', 'https://g.codefresh.io')
 CF_API_KEY = os.getenv('CF_API_KEY')
 CF_STEP_NAME = os.getenv('CF_STEP_NAME', 'STEP_NAME')
 CHECK_INTERVAL = 5  # interval in seconds between each check in the monitor loop
-GRAPHQL_RETRIES = 13 # Number of retries allowed for each graphql call
+GRAPHQL_RETRIES = 13  # Number of retries allowed for each graphql call
 
 # Inferred during execution time
 CF_ACCOUNT_ID = ""  # It will be infered later, using the CF_API_KEY
@@ -195,11 +195,14 @@ def get_rollout_state():
 
     # print('rollout_resource =>')
     # print(json.dumps(rollout_resource, indent=4))
-    if rollout_resource['resource']['liveState'] != '':
-        rollout_state = json.loads(rollout_resource.get(
-            'resource', {}).get('liveState', {}))
-    multi_cluster_rollout_id = rollout_state.get('metadata', {}).get(
-        'labels', {}).get('multiClusterRolloutId', '')
+    try:
+        if rollout_resource['resource']['liveState'] != '':
+            rollout_state = json.loads(rollout_resource.get(
+                'resource', {}).get('liveState', {}))
+        multi_cluster_rollout_id = rollout_state.get('metadata', {}).get(
+            'labels', {}).get('multiClusterRolloutId', '')
+    except:
+        multi_cluster_rollout_id = ''
 
     if multi_cluster_rollout_id == MULTI_CLUSTER_ROLLOUT_ID:
         rollout_state = {
